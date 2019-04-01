@@ -9,10 +9,11 @@ import (
 )
 
 type conf struct {
-	ServerPort    int    `yaml:"serverport"`
-	TLSServerName string `yaml:"tlsservername"`
-	IsSecure      bool   `yaml:"issecure"`
-	KeyWord       string `yaml:"keyword"`
+	ServerPort     int    `yaml:"serverport"`
+	ServerCertPort int    `yaml:"servercertport"`
+	TLSServerName  string `yaml:"tlsservername"`
+	IsSecure       bool   `yaml:"issecure"`
+	KeyWord        string `yaml:"keyword"`
 }
 
 type registerCallback func(*grpc.Server)
@@ -45,7 +46,7 @@ func CreateServer() *Server {
 // Serve start serving
 func (s *Server) Serve(regcb registerCallback) {
 	if s.config.IsSecure {
-		s.servegRPCAutoCert(s.config.TLSServerName, s.config.ServerPort, regcb)
+		s.servegRPCAutoCert(s.config.TLSServerName, s.config.ServerPort, s.config.ServerCertPort, regcb)
 	} else {
 		servegRPC(s.config.TLSServerName, s.config.ServerPort, regcb)
 	}

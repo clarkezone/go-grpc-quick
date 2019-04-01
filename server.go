@@ -32,7 +32,7 @@ func servegRPC(serverName string, serverPort int, cb registerCallback) {
 	}
 }
 
-func (be *Server) servegRPCAutoCert(serverName string, serverPort int, cb registerCallback) {
+func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCertPort int, cb registerCallback) {
 	fmt.Printf("Serving gRPC AutoCert for endpoint %v on port %v\n", serverName, serverPort)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", serverPort))
@@ -41,7 +41,7 @@ func (be *Server) servegRPCAutoCert(serverName string, serverPort int, cb regist
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	grpcServer, err := be.listenWithAutoCert(serverName, 0)
+	grpcServer, err := be.listenWithAutoCert(serverName, serverPort, serverCertPort)
 	if err != nil {
 		log.Fatalf("failed to listenwithautocert: %v", err)
 	}
@@ -56,14 +56,14 @@ func (be *Server) servegRPCAutoCert(serverName string, serverPort int, cb regist
 	}
 }
 
-func (be *Server) listenWithAutoCert(serverName string, p int) (*grpc.Server, error) {
+func (be *Server) listenWithAutoCert(serverName string, p int, certport int) (*grpc.Server, error) {
 	m := &autocert.Manager{
 		Cache:      autocert.DirCache("tls"),
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist(serverName),
 	}
 	//todo: do we actually need to listen here to get autocert to work?  If yes, put port in config
-	go http.ListenAndServe(":8080", m.HTTPHandler(nil))
+	go http.ListenAndServe(fmt.Sprintf(":%v, certport"), m.HTTPHandler(nil))
 	creds := credentials.NewTLS(&tls.Config{GetCertificate: m.GetCertificate})
 
 	opts := []grpc.ServerOption{grpc.Creds(creds),

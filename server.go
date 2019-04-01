@@ -33,7 +33,7 @@ func servegRPC(serverName string, serverPort int, cb registerCallback) {
 }
 
 func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCertPort int, cb registerCallback) {
-	fmt.Printf("Serving gRPC AutoCert for endpoint %v on port %v\n", serverName, serverPort)
+	fmt.Printf("Serving gRPC AutoCert for endpoint %v on port %v with certificate completion on port %v\n", serverName, serverPort, certport)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", serverPort))
 
@@ -62,8 +62,13 @@ func (be *Server) listenWithAutoCert(serverName string, p int, certport int) (*g
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist(serverName),
 	}
-	//todo: do we actually need to listen here to get autocert to work?  If yes, put port in config
-	go http.ListenAndServe(fmt.Sprintf(":%v, certport"), m.HTTPHandler(nil))
+
+	go func() {
+		err := http.ListenAndServe(fmt.Sprintf(":%v", certport), m.HTTPHandler(nil))
+		if err != nil {
+			log.Fatal("Error starting certificate completion thread: %v", err)
+		}
+	}()
 	creds := credentials.NewTLS(&tls.Config{GetCertificate: m.GetCertificate})
 
 	opts := []grpc.ServerOption{grpc.Creds(creds),

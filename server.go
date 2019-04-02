@@ -24,8 +24,6 @@ func servegRPC(serverName string, serverPort int, cb registerCallback) {
 	}
 	grpcServer := grpc.NewServer()
 	cb(grpcServer)
-	//helloServer := HelloServer{}
-	//jamestestrpc.RegisterJamesTestServiceServer(grpcServer, &helloServer)
 	err = grpcServer.Serve(lis)
 	if err != nil {
 		log.Fatalf("failed to serve: %v", err)
@@ -47,8 +45,6 @@ func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCer
 	}
 
 	cb(grpcServer)
-	// helloServer := HelloServer{}
-	// jamestestrpc.RegisterJamesTestServiceServer(grpcServer, &helloServer)
 	err = grpcServer.Serve(lis)
 
 	if err != nil {
@@ -58,7 +54,7 @@ func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCer
 
 func (be *Server) listenWithAutoCert(serverName string, p int, certport int) (*grpc.Server, error) {
 	m := &autocert.Manager{
-		Cache:      autocert.DirCache("tls"),
+		Cache:      autocert.DirCache("//tlsdata"),
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist(serverName),
 	}

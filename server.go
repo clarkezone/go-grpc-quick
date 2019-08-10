@@ -24,8 +24,7 @@ func servegRPC(serverName string, serverPort int, cb registerCallback) {
 	}
 	grpcServer := grpc.NewServer()
 	cb(grpcServer)
-	//helloServer := HelloServer{}
-	//jamestestrpc.RegisterJamesTestServiceServer(grpcServer, &helloServer)
+
 	err = grpcServer.Serve(lis)
 	if err != nil {
 		log.Fatalf("failed to serve: %v", err)
@@ -33,7 +32,7 @@ func servegRPC(serverName string, serverPort int, cb registerCallback) {
 }
 
 func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCertPort int, cb registerCallback) {
-	fmt.Printf("Serving gRPC AutoCert for endpoint %v on port %v with certificate completion on port %v\n", serverName, serverPort, serverCertPort)
+	fmt.Printf("Serving gRPC AutoCert for endpoint %v on port %v\nwith certificate completion on port %v\n", serverName, serverPort, serverCertPort)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", serverPort))
 
@@ -41,14 +40,13 @@ func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCer
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	grpcServer, err := be.listenWithAutoCert(serverName, serverPort, serverCertPort)
+	grpcServer, err := be.listenWithAutoCert(serverName, serverCertPort)
 	if err != nil {
 		log.Fatalf("failed to listenwithautocert: %v", err)
 	}
 
 	cb(grpcServer)
-	// helloServer := HelloServer{}
-	// jamestestrpc.RegisterJamesTestServiceServer(grpcServer, &helloServer)
+
 	err = grpcServer.Serve(lis)
 
 	if err != nil {
@@ -56,7 +54,7 @@ func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCer
 	}
 }
 
-func (be *Server) listenWithAutoCert(serverName string, p int, certport int) (*grpc.Server, error) {
+func (be *Server) listenWithAutoCert(serverName string, certport int) (*grpc.Server, error) {
 	m := &autocert.Manager{
 		Cache:      autocert.DirCache("tls"),
 		Prompt:     autocert.AcceptTOS,
@@ -66,7 +64,7 @@ func (be *Server) listenWithAutoCert(serverName string, p int, certport int) (*g
 	go func() {
 		err := http.ListenAndServe(fmt.Sprintf(":%v", certport), m.HTTPHandler(nil))
 		if err != nil {
-			log.Fatal("Error starting certificate completion thread: %v", err)
+			log.Fatalf("Error starting certificate completion thread: %v\n", err)
 		}
 	}()
 	creds := credentials.NewTLS(&tls.Config{GetCertificate: m.GetCertificate})
@@ -94,7 +92,6 @@ func (be *Server) unaryInterceptor(ctx context.Context, req interface{}, info *g
 			return nil, fmt.Errorf("bad creds")
 		}
 
-		//ctx = context.WithValue(ctx, clientIDKey, clientID)
 		return handler(ctx, req)
 	}
 

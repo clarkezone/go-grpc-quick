@@ -50,6 +50,7 @@ func (c *conf) getServerConf() {
 		if err != nil {
 			log.Fatalf("Please create a serverconfig.yaml file  #%v ", err)
 		}
+		return
 	}
 	err = yaml.Unmarshal(yamlFile, c)
 	if err != nil {

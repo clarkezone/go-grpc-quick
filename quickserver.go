@@ -26,12 +26,12 @@ func (c *conf) getServerConf() {
 	if err != nil {
 		err = nil
 		c = &conf{}
-		i, err := strconv.ParseInt(os.Getenv("SERVERPORT"), 10, 16)
+		i, err := strconv.ParseInt(os.Getenv("SERVERPORT"), 10, 32)
 		if err == nil {
 			c.ServerPort = int(i)
 		}
 
-		i, err = strconv.ParseInt(os.Getenv("SERVERCERTPORT"), 10, 16)
+		i, err = strconv.ParseInt(os.Getenv("SERVERCERTPORT"), 10, 32)
 		if err == nil {
 			c.ServerCertPort = int(i)
 		}

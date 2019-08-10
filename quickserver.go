@@ -38,7 +38,7 @@ func (c *conf) getServerConf() {
 
 		c.TLSServerName = os.Getenv("TLSSERVERNAME")
 
-		b, err := strconv.ParseBool(os.Getenv("ISECURE"))
+		b, err := strconv.ParseBool(os.Getenv("ISSECURE"))
 		if err == nil {
 			c.IsSecure = b
 		}

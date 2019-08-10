@@ -24,7 +24,7 @@ func (c *conf) getServerConf() {
 	yamlFile, err := ioutil.ReadFile("serverconfig.yaml")
 	//TODO: create an empty one
 	if err != nil {
-
+		err = nil
 		c = &conf{}
 		i, err := strconv.ParseInt(os.Getenv("SERVERPORT"), 0, 10000)
 		if err == nil {

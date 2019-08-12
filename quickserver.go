@@ -1,6 +1,7 @@
 package grpc_quick
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -24,27 +25,6 @@ func (c *conf) getServerConf() {
 	yamlFile, err := ioutil.ReadFile("serverconfig.yaml")
 	//TODO: create an empty one
 	if err != nil {
-		err = nil
-		c = &conf{}
-		i, err := strconv.ParseInt(os.Getenv("SERVERPORT"), 10, 32)
-		if err == nil {
-			c.ServerPort = int(i)
-		}
-
-		i, err = strconv.ParseInt(os.Getenv("SERVERCERTPORT"), 10, 32)
-		if err == nil {
-			c.ServerCertPort = int(i)
-		}
-
-		c.TLSServerName = os.Getenv("TLSSERVERNAME")
-
-		b, err := strconv.ParseBool(os.Getenv("ISSECURE"))
-		if err == nil {
-			c.IsSecure = b
-		}
-
-		c.KeyWord = os.Getenv("KEYWORD")
-
 		//TODO validate config
 
 		if err != nil {
@@ -58,6 +38,27 @@ func (c *conf) getServerConf() {
 	}
 }
 
+func (c *conf) getServerConfEnvironment() {
+	i, err := strconv.ParseInt(os.Getenv("SERVERPORT"), 10, 32)
+	if err == nil {
+		c.ServerPort = int(i)
+	}
+
+	i, err = strconv.ParseInt(os.Getenv("SERVERCERTPORT"), 10, 32)
+	if err == nil {
+		c.ServerCertPort = int(i)
+	}
+
+	c.TLSServerName = os.Getenv("TLSSERVERNAME")
+
+	b, err := strconv.ParseBool(os.Getenv("ISSECURE"))
+	if err == nil {
+		c.IsSecure = b
+	}
+
+	c.KeyWord = os.Getenv("KEYWORD")
+}
+
 // Server object
 type Server struct {
 	config *conf
@@ -67,7 +68,11 @@ type Server struct {
 func CreateServer() *Server {
 	serv := &Server{}
 	serv.config = &conf{}
-	serv.config.getServerConf()
+	serv.config.getServerConfEnvironment()
+	if serv.config.ServerPort == 0 {
+		fmt.Printf("Config not detected in environment, attempting YAML\n")
+		serv.config.getServerConf()
+	}
 	return serv
 }
 

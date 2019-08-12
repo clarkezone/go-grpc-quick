@@ -31,7 +31,7 @@ func servegRPC(serverName string, serverPort int, cb registerCallback) {
 }
 
 func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCertPort int, cb registerCallback) {
-	fmt.Printf("Serving gRPC AutoCert for endpoint %v on port %v\nwith certificate completion on port %v\n", serverName, serverPort, serverCertPort)
+	fmt.Printf("Serving gRPC AutoCert for endpoint %v on port %v\nwith certificate completion on port %v with keyword %v\n", serverName, serverPort, serverCertPort, be.config.KeyWord)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", serverPort))
 

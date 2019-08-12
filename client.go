@@ -16,7 +16,7 @@ func createclient(servername string, port int) (*grpc.ClientConn, error) {
 }
 
 func createclientsecure(servername string, port int, keyword string) (*grpc.ClientConn, error) {
-	fmt.Printf("Client Secure %v %v\n", servername, port)
+	fmt.Printf("Client Secure %v %v with keyword %v\n", servername, port, keyword)
 
 	conf := &tls.Config{ServerName: servername}
 

@@ -1,8 +1,11 @@
 package grpc_quick
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
+	"strconv"
 
 	grpc "google.golang.org/grpc"
 	yaml "gopkg.in/yaml.v2"
@@ -29,6 +32,22 @@ func (c *clientconf) getClientConf() {
 	}
 }
 
+func (c *clientconf) getClientConfEnvironment() {
+	i, err := strconv.ParseInt(os.Getenv("SERVERPORT"), 10, 32)
+	if err == nil {
+		c.ServerPort = int(i)
+	}
+
+	c.TLSServerName = os.Getenv("TLSSERVERNAME")
+
+	b, err := strconv.ParseBool(os.Getenv("ISSECURE"))
+	if err == nil {
+		c.IsSecure = b
+	}
+
+	c.KeyWord = os.Getenv("KEYWORD")
+}
+
 // Client object
 type Client struct {
 	config     *clientconf
@@ -39,7 +58,12 @@ type Client struct {
 func CreateClient() *Client {
 	client := &Client{}
 	client.config = &clientconf{}
-	client.config.getClientConf()
+	client.config.getClientConfEnvironment()
+	if client.config.ServerPort == 0 {
+		fmt.Printf("Config not detected in environment, attempting YAML\n")
+		client.config.getClientConf()
+	}
+
 	return client
 }
 

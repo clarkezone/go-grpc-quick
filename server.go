@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-func servegRPC(serverName string, serverPort int, cb registerCallback) {
+func servegRPC(serverName string, serverPort int, cb registerCallback, cancel context.CancelFunc) *grpc.Server {
 	fmt.Printf("Serving gRPC for endpoint %v on port %v\n", serverName, serverPort)
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", serverPort))
 	if err != nil {
@@ -24,13 +24,15 @@ func servegRPC(serverName string, serverPort int, cb registerCallback) {
 	}
 	grpcServer := grpc.NewServer()
 	cb(grpcServer)
-	err = grpcServer.Serve(lis)
-	if err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
+	go func() {
+		grpcServer.Serve(lis)
+
+		cancel()
+	}()
+	return grpcServer
 }
 
-func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCertPort int, cb registerCallback) {
+func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCertPort int, cb registerCallback, cancel context.CancelFunc) *grpc.Server {
 	fmt.Printf("Serving gRPC AutoCert for endpoint %v on port %v\nwith certificate completion on port %v with keyword %v\n", serverName, serverPort, serverCertPort, be.config.KeyWord)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", serverPort))
@@ -45,11 +47,14 @@ func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCer
 	}
 
 	cb(grpcServer)
-	err = grpcServer.Serve(lis)
 
-	if err != nil {
-		log.Fatalf("failed to serve grpc with autocert: %v", err)
-	}
+	go func() {
+		grpcServer.Serve(lis)
+
+		cancel()
+	}()
+
+	return grpcServer
 }
 
 func (be *Server) listenWithAutoCert(serverName string, certport int) (*grpc.Server, error) {

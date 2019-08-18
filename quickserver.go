@@ -1,6 +1,7 @@
 package grpc_quick
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -77,10 +78,14 @@ func CreateServer() *Server {
 }
 
 // Serve start serving
-func (s *Server) Serve(regcb registerCallback) {
+func (s *Server) Serve(ctx context.Context, regcb registerCallback) {
+	ctx, cancel := context.WithCancel(ctx)
+	var srv *grpc.Server
 	if s.config.IsSecure {
-		s.servegRPCAutoCert(s.config.TLSServerName, s.config.ServerPort, s.config.ServerCertPort, regcb)
+		srv = s.servegRPCAutoCert(s.config.TLSServerName, s.config.ServerPort, s.config.ServerCertPort, regcb, cancel)
 	} else {
-		servegRPC(s.config.TLSServerName, s.config.ServerPort, regcb)
+		srv = servegRPC(s.config.TLSServerName, s.config.ServerPort, regcb, cancel)
 	}
+	<-ctx.Done()
+	srv.GracefulStop()
 }

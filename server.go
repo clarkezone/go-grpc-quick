@@ -28,6 +28,7 @@ func servegRPC(serverName string, serverPort int, cb registerCallback, cancel co
 		grpcServer.Serve(lis)
 
 		cancel()
+		log.Println("grpc Serve goroutine has exited, cancel called")
 	}()
 	return grpcServer
 }
@@ -52,6 +53,7 @@ func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCer
 		grpcServer.Serve(lis)
 
 		cancel()
+		log.Println("grpc Serve goroutine has exited, cancel called")
 	}()
 
 	return grpcServer

@@ -88,4 +88,5 @@ func (s *Server) Serve(ctx context.Context, regcb registerCallback) {
 	}
 	<-ctx.Done()
 	srv.GracefulStop()
+	log.Println("Serve complete")
 }

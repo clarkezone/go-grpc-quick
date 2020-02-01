@@ -1,7 +1,6 @@
 package grpc_quick
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -23,12 +22,10 @@ func getServerConf() *Conf {
 	c := &Conf{}
 	yamlFile, err := ioutil.ReadFile("serverconfig.yaml")
 	if err != nil {
-		fmt.Printf("Please create a serverconfig.yaml file  #%v ", err)
 		return nil
 	}
 	err = yaml.Unmarshal(yamlFile, c)
 	if err != nil {
-		fmt.Printf("Invalid serverconfig.yaml: %v", err)
 		return nil
 	}
 	//TODO validate config

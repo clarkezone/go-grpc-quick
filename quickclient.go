@@ -18,7 +18,7 @@ func GetClientConfig() *ClientConf {
 	config := getClientConfEnvironment()
 	if config == nil {
 		fmt.Printf("Config not detected in environment, attempting YAML\n")
-		config = GetClientConfig()
+		config = getClientConf()
 	}
 	return config
 }

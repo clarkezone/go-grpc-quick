@@ -35,6 +35,11 @@ func GetConfig() *Conf {
 	return config
 }
 
+//CreateEmptyConfig creates a YAML file ready to populate
+func CreateEmptyConfig() {
+	createEmptyConfig()
+}
+
 // CreateServer is a factory for servers
 func CreateServer(c *Conf) *Server {
 	if c == nil {

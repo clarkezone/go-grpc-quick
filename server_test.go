@@ -5,9 +5,20 @@ import (
 )
 
 func TestCreateServer(t *testing.T) {
-	srv := CreateServer()
+	c := &Conf{}
+	srv := CreateServer(c)
 
-	if srv != nil {
+	if srv == nil {
 		t.Fatalf("there should be no config because no YAML or environment")
 	}
+}
+
+func TestCreateServerFailNilConfig(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+
+	_ = CreateServer(nil)
 }

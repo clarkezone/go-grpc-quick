@@ -11,8 +11,9 @@ func TestSerSuccess(t *testing.T) {
 	os.Setenv("USETLS", "TRUE")
 	os.Setenv("TLSSERVERNAME", "FOO")
 	os.Setenv("PERCALLSECURITY", "FALSE")
-	config := &conf{}
-	if !config.getServerConfEnvironment() {
+
+	config := getServerConfEnvironment()
+	if config == nil {
 		t.Fatalf("Config wasn't complete")
 	}
 	if config.ServerPort != 8443 {
@@ -38,16 +39,16 @@ func TestSerSuccess(t *testing.T) {
 }
 
 func TestDetectBadPort(t *testing.T) {
-	config := &conf{}
-	if config.getServerConfEnvironment() {
+	config := getServerConfEnvironment()
+	if config != nil {
 		t.Fatalf("Config not correctly rejectedf")
 	}
 }
 
 func TestDetectBadCertPort(t *testing.T) {
 	os.Setenv("SERVERPORT", "8443")
-	config := &conf{}
-	if config.getServerConfEnvironment() {
+	config := getServerConfEnvironment()
+	if config != nil {
 		t.Fatalf("Config not correctly rejectedf")
 	}
 	os.Setenv("SERVERPORT", "")
@@ -56,8 +57,8 @@ func TestDetectBadCertPort(t *testing.T) {
 func TestDetectBadServerName(t *testing.T) {
 	os.Setenv("SERVERPORT", "8443")
 	os.Setenv("SERVERCERTPORT", "8443")
-	config := &conf{}
-	if config.getServerConfEnvironment() {
+	config := getServerConfEnvironment()
+	if config != nil {
 		t.Fatalf("Config not correctly rejectedf")
 	}
 	os.Setenv("SERVERPORT", "")
@@ -68,8 +69,8 @@ func TestDetectBadTLS(t *testing.T) {
 	os.Setenv("SERVERPORT", "8443")
 	os.Setenv("SERVERCERTPORT", "8443")
 	os.Setenv("TLSSERVERNAME", "8443")
-	config := &conf{}
-	if config.getServerConfEnvironment() {
+	config := getServerConfEnvironment()
+	if config != nil {
 		t.Fatalf("Config not correctly rejectedf")
 	}
 	os.Setenv("SERVERPORT", "")
@@ -82,8 +83,8 @@ func TestDetectBadPerCallSecurity(t *testing.T) {
 	os.Setenv("SERVERCERTPORT", "8443")
 	os.Setenv("TLSSERVERNAME", "8443")
 	os.Setenv("USETLS", "TRUE")
-	config := &conf{}
-	if config.getServerConfEnvironment() {
+	config := getServerConfEnvironment()
+	if config != nil {
 		t.Fatalf("Config not correctly rejectedf")
 	}
 	os.Setenv("SERVERPORT", "")

@@ -16,7 +16,7 @@ import (
 type clientconf struct {
 	ServerPort    int    `yaml:"serverport"`
 	TLSServerName string `yaml:"tlsservername"`
-	IsSecure      bool   `yaml:"issecure"`
+	UseTLS        bool   `yaml:"useTLS"`
 	KeyWord       string `yaml:"keyword"`
 }
 
@@ -40,9 +40,9 @@ func (c *clientconf) getClientConfEnvironment() {
 
 	c.TLSServerName = os.Getenv("TLSSERVERNAME")
 
-	b, err := strconv.ParseBool(os.Getenv("ISSECURE"))
+	b, err := strconv.ParseBool(os.Getenv("USETLS"))
 	if err == nil {
-		c.IsSecure = b
+		c.UseTLS = b
 	}
 
 	c.KeyWord = os.Getenv("KEYWORD")
@@ -71,7 +71,7 @@ func CreateClient() *Client {
 func (s *Client) Connect() {
 	var err error
 
-	if s.config.IsSecure == false {
+	if s.config.UseTLS == false {
 		s.Connection, err = createclient(s.config.TLSServerName, s.config.ServerPort)
 	} else {
 		s.Connection, err = createclientsecure(s.config.TLSServerName, s.config.ServerPort, s.config.KeyWord)

@@ -33,7 +33,7 @@ func servegRPC(serverName string, serverPort int, cb registerCallback, cancel co
 	return grpcServer
 }
 
-func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCertPort int, cb registerCallback, cancel context.CancelFunc) *grpc.Server {
+func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCertPort int, cb registerCallback, cancel context.CancelFunc, usePerCallSecurity bool) *grpc.Server {
 	fmt.Printf("Serving gRPC AutoCert for endpoint %v on port %v\nwith certificate completion on port %v with keyword %v\n", serverName, serverPort, serverCertPort, be.config.KeyWord)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", serverPort))
@@ -42,7 +42,7 @@ func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCer
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	grpcServer, err := be.listenWithAutoCert(serverName, serverCertPort)
+	grpcServer, err := be.listenWithAutoCert(serverName, serverCertPort, usePerCallSecurity)
 	if err != nil {
 		log.Fatalf("failed to listenwithautocert: %v", err)
 	}
@@ -59,7 +59,7 @@ func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCer
 	return grpcServer
 }
 
-func (be *Server) listenWithAutoCert(serverName string, certport int) (*grpc.Server, error) {
+func (be *Server) listenWithAutoCert(serverName string, certport int, usePerCallSecurity bool) (*grpc.Server, error) {
 	m := &autocert.Manager{
 		Cache:      autocert.DirCache("//tlsdata"),
 		Prompt:     autocert.AcceptTOS,
@@ -74,9 +74,15 @@ func (be *Server) listenWithAutoCert(serverName string, certport int) (*grpc.Ser
 	}()
 	creds := credentials.NewTLS(&tls.Config{GetCertificate: m.GetCertificate})
 
-	opts := []grpc.ServerOption{grpc.Creds(creds),
-		grpc.UnaryInterceptor(be.unaryInterceptor),
-		grpc.StreamInterceptor(be.streamInterceptor),
+	var opts []grpc.ServerOption
+
+	if usePerCallSecurity {
+		opts = []grpc.ServerOption{grpc.Creds(creds),
+			grpc.UnaryInterceptor(be.unaryInterceptor),
+			grpc.StreamInterceptor(be.streamInterceptor),
+		}
+	} else {
+		opts = []grpc.ServerOption{grpc.Creds(creds)}
 	}
 
 	srv := grpc.NewServer(opts...)

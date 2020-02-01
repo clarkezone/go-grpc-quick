@@ -25,6 +25,11 @@ func GetConfig() *ServerConf {
 	return config
 }
 
+// CreateEmptyConfig creates an empty config
+func CreateEmptyConfig() {
+	createEmptyConfig()
+}
+
 // CreateServer is a factory for servers
 func CreateServer(c *ServerConf) *Server {
 	if c == nil {

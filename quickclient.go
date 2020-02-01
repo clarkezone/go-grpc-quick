@@ -13,15 +13,28 @@ type Client struct {
 	Connection *grpc.ClientConn
 }
 
-// CreateClient is a factory for servers
-func CreateClient() *Client {
-	client := &Client{}
-	client.config = &ClientConf{}
-	client.config.getClientConfEnvironment()
-	if client.config.ServerPort == 0 {
+// GetClientConfig attempts to retrieve configuration from the environment, then a YAML file
+func GetClientConfig() *ClientConf {
+	config := getClientConfEnvironment()
+	if config == nil {
 		fmt.Printf("Config not detected in environment, attempting YAML\n")
-		client.config.getClientConf()
+		config = GetClientConfig()
 	}
+	return config
+}
+
+// CreateEmptyClientConfig creates an empty config
+func CreateEmptyClientConfig() {
+	createEmptyClientConfig()
+}
+
+// CreateClient is a factory for servers
+func CreateClient(c *ClientConf) *Client {
+	if c == nil {
+		panic("Invalid config")
+	}
+	client := &Client{}
+	client.config = c
 
 	return client
 }

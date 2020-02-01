@@ -15,8 +15,8 @@ type Server struct {
 	config *ServerConf
 }
 
-// GetConfig attempts to retrieve configuration from the environment, then a YAML file
-func GetConfig() *ServerConf {
+// GetServerConfig attempts to retrieve configuration from the environment, then a YAML file
+func GetServerConfig() *ServerConf {
 	config := getServerConfEnvironment()
 	if config == nil {
 		fmt.Printf("Config not detected in environment, attempting YAML\n")
@@ -25,9 +25,9 @@ func GetConfig() *ServerConf {
 	return config
 }
 
-// CreateEmptyConfig creates an empty config
-func CreateEmptyConfig() {
-	createEmptyConfig()
+// CreateEmptyServerConfig creates an empty config
+func CreateEmptyServerConfig() {
+	createEmptyServerConfig()
 }
 
 // CreateServer is a factory for servers

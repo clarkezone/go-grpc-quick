@@ -19,7 +19,7 @@ type ServerConf struct {
 	KeyWord string `yaml:"keyword"`
 }
 
-func createEmptyConfig() bool {
+func createEmptyServerConfig() bool {
 	cnf := ServerConf{}
 	data, err := yaml.Marshal(cnf)
 	if err != nil {

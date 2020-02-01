@@ -5,7 +5,7 @@ import (
 )
 
 func TestCreateServer(t *testing.T) {
-	c := &Conf{}
+	c := &ServerConf{}
 	srv := CreateServer(c)
 
 	if srv == nil {

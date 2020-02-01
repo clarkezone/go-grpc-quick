@@ -2,13 +2,13 @@ package grpc_quick
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 
 	yaml "gopkg.in/yaml.v2"
 )
 
+//ClientConf is a client configuraiton struct
 type ClientConf struct {
 	ServerPort    int    `yaml:"serverport"`
 	TLSServerName string `yaml:"tlsservername"`
@@ -16,22 +16,37 @@ type ClientConf struct {
 	KeyWord       string `yaml:"keyword"`
 }
 
-func (c *ClientConf) getClientConf() {
+func createEmptyClientConfig() bool {
+	cnf := ClientConf{}
+	data, err := yaml.Marshal(cnf)
+	if err != nil {
+		return false
+	}
+	ioutil.WriteFile("clientconfig.yaml", data, 0777)
+	return true
+}
+
+func getClientConf() *ClientConf {
+	c := &ClientConf{}
 	yamlFile, err := ioutil.ReadFile("clientconfig.yaml")
 	//TODO: create an empty one
 	if err != nil {
-		log.Fatalf("Please create a clientconfig.yaml file  #%v ", err)
+		return nil
 	}
 	err = yaml.Unmarshal(yamlFile, c)
 	if err != nil {
-		log.Fatalf("Invalid clientconfig.yaml: %v", err)
+		return nil
 	}
+	return c
 }
 
-func (c *ClientConf) getClientConfEnvironment() {
+func getClientConfEnvironment() *ClientConf {
+	c := &ClientConf{}
 	i, err := strconv.ParseInt(os.Getenv("SERVERPORT"), 10, 32)
 	if err == nil {
 		c.ServerPort = int(i)
+	} else {
+		return nil
 	}
 
 	c.TLSServerName = os.Getenv("TLSSERVERNAME")
@@ -39,7 +54,10 @@ func (c *ClientConf) getClientConfEnvironment() {
 	b, err := strconv.ParseBool(os.Getenv("USETLS"))
 	if err == nil {
 		c.UseTLS = b
+	} else {
+		return nil
 	}
 
 	c.KeyWord = os.Getenv("KEYWORD")
+	return c
 }

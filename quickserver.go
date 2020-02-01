@@ -8,25 +8,15 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-type Conf struct {
-	ServerPort      int    `yaml:"serverport"`
-	ServerCertPort  int    `yaml:"servercertport"`
-	TLSServerName   string `yaml:"tlsservername"`
-	UseTLS          bool   `yaml:"usetls"`
-	PerCallSecurity bool   `yaml:"percallsecurity"`
-
-	KeyWord string `yaml:"keyword"`
-}
-
 type registerCallback func(*grpc.Server)
 
 // Server object
 type Server struct {
-	config *Conf
+	config *ServerConf
 }
 
 // GetConfig attempts to retrieve configuration from the environment, then a YAML file
-func GetConfig() *Conf {
+func GetConfig() *ServerConf {
 	config := getServerConfEnvironment()
 	if config == nil {
 		fmt.Printf("Config not detected in environment, attempting YAML\n")
@@ -35,13 +25,8 @@ func GetConfig() *Conf {
 	return config
 }
 
-//CreateEmptyConfig creates a YAML file ready to populate
-func CreateEmptyConfig() {
-	createEmptyConfig()
-}
-
 // CreateServer is a factory for servers
-func CreateServer(c *Conf) *Server {
+func CreateServer(c *ServerConf) *Server {
 	if c == nil {
 		panic("Invalid config")
 	}

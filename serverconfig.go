@@ -8,8 +8,19 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+//ServerConf is the server configuration struct
+type ServerConf struct {
+	ServerPort      int    `yaml:"serverport"`
+	ServerCertPort  int    `yaml:"servercertport"`
+	TLSServerName   string `yaml:"tlsservername"`
+	UseTLS          bool   `yaml:"usetls"`
+	PerCallSecurity bool   `yaml:"percallsecurity"`
+
+	KeyWord string `yaml:"keyword"`
+}
+
 func createEmptyConfig() bool {
-	cnf := Conf{}
+	cnf := ServerConf{}
 	data, err := yaml.Marshal(cnf)
 	if err != nil {
 		return false
@@ -18,8 +29,8 @@ func createEmptyConfig() bool {
 	return true
 }
 
-func getServerConf() *Conf {
-	c := &Conf{}
+func getServerConf() *ServerConf {
+	c := &ServerConf{}
 	yamlFile, err := ioutil.ReadFile("serverconfig.yaml")
 	if err != nil {
 		return nil
@@ -32,8 +43,8 @@ func getServerConf() *Conf {
 	return c
 }
 
-func getServerConfEnvironment() *Conf {
-	c := &Conf{}
+func getServerConfEnvironment() *ServerConf {
+	c := &ServerConf{}
 	i, err := strconv.ParseInt(os.Getenv("SERVERPORT"), 10, 32)
 	if err == nil {
 		c.ServerPort = int(i)

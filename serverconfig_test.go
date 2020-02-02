@@ -112,7 +112,7 @@ tlscachedir: "//tlsdata"
 	bytes := []byte(yamlString)
 
 	err := ioutil.WriteFile("serverconfig.yaml", bytes, 777)
-	if err != nil {
+	if err == nil {
 		defer func() {
 			os.Remove("serverconfig.yaml")
 		}()

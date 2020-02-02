@@ -45,9 +45,9 @@ func (s *Server) Serve(ctx context.Context, regcb registerCallback) {
 	ctx, cancel := context.WithCancel(ctx)
 	var srv *grpc.Server
 	if s.config.UseTLS {
-		srv = s.servegRPCAutoCert(s.config.TLSServerName, s.config.ServerPort, s.config.ServerCertPort, regcb, cancel, s.config.PerCallSecurity)
+		srv = s.servegRPCAutoCert(s.config, regcb, cancel)
 	} else {
-		srv = servegRPC(s.config.TLSServerName, s.config.ServerPort, regcb, cancel)
+		srv = s.servegRPC(s.config.TLSServerName, s.config.ServerPort, regcb, s.config.PerCallSecurity, cancel)
 	}
 	<-ctx.Done()
 	srv.GracefulStop()

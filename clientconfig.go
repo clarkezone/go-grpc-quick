@@ -10,10 +10,11 @@ import (
 
 //ClientConf is a client configuraiton struct
 type ClientConf struct {
-	ServerPort    int    `yaml:"serverport"`
-	TLSServerName string `yaml:"tlsservername"`
-	UseTLS        bool   `yaml:"useTLS"`
-	KeyWord       string `yaml:"keyword"`
+	ServerPort      int    `yaml:"serverport"`
+	TLSServerName   string `yaml:"tlsservername"`
+	UseTLS          bool   `yaml:"useTLS"`
+	PerCallSecurity bool   `yaml:"percallsecurity"`
+	KeyWord         string `yaml:"keyword"`
 }
 
 func createEmptyClientConfig() bool {
@@ -54,6 +55,13 @@ func getClientConfEnvironment() *ClientConf {
 	b, err := strconv.ParseBool(os.Getenv("USETLS"))
 	if err == nil {
 		c.UseTLS = b
+	} else {
+		return nil
+	}
+
+	b, err = strconv.ParseBool(os.Getenv("PERCALLSECURITY"))
+	if err == nil {
+		c.PerCallSecurity = b
 	} else {
 		return nil
 	}

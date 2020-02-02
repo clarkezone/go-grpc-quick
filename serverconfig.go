@@ -1,6 +1,7 @@
 package grpc_quick
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -15,8 +16,8 @@ type ServerConf struct {
 	TLSServerName   string `yaml:"tlsservername"`
 	UseTLS          bool   `yaml:"usetls"`
 	PerCallSecurity bool   `yaml:"percallsecurity"`
-
-	KeyWord string `yaml:"keyword"`
+	TLSCacheDir     string `yaml:"tlscachedir"`
+	KeyWord         string `yaml:"keyword"`
 }
 
 func createEmptyServerConfig() bool {
@@ -37,6 +38,7 @@ func getServerConf() *ServerConf {
 	}
 	err = yaml.Unmarshal(yamlFile, c)
 	if err != nil {
+		fmt.Printf("Error parsing YAML: %v\n", err.Error())
 		return nil
 	}
 	//TODO validate config
@@ -79,6 +81,8 @@ func getServerConfEnvironment() *ServerConf {
 	}
 
 	c.KeyWord = os.Getenv("KEYWORD")
+
+	c.TLSCacheDir = os.Getenv("TLSCACHEDIR")
 
 	return c
 }

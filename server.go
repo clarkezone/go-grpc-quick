@@ -16,13 +16,23 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-func servegRPC(serverName string, serverPort int, cb registerCallback, cancel context.CancelFunc) *grpc.Server {
+func (be *Server) servegRPC(serverName string, serverPort int, cb registerCallback, usePerCallSecurity bool, cancel context.CancelFunc) *grpc.Server {
 	fmt.Printf("Serving gRPC for endpoint %v on port %v\n", serverName, serverPort)
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", serverPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := grpc.NewServer()
+
+	var opts []grpc.ServerOption
+
+	if usePerCallSecurity {
+		opts = []grpc.ServerOption{
+			grpc.UnaryInterceptor(be.unaryInterceptor),
+			grpc.StreamInterceptor(be.streamInterceptor),
+		}
+	}
+
+	grpcServer := grpc.NewServer(opts...)
 	cb(grpcServer)
 	go func() {
 		grpcServer.Serve(lis)
@@ -33,16 +43,20 @@ func servegRPC(serverName string, serverPort int, cb registerCallback, cancel co
 	return grpcServer
 }
 
-func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCertPort int, cb registerCallback, cancel context.CancelFunc, usePerCallSecurity bool) *grpc.Server {
-	fmt.Printf("Serving gRPC AutoCert for endpoint %v on port %v\nwith certificate completion on port %v with keyword %v\n", serverName, serverPort, serverCertPort, be.config.KeyWord)
+func (be *Server) servegRPCAutoCert(conf *ServerConf, cb registerCallback, cancel context.CancelFunc) *grpc.Server {
+	fmt.Printf("Serving gRPC AutoCert for endpoint %v on port %v\nwith certificate completion on port %v with keyword %v\n", conf.TLSServerName, conf.ServerPort, conf.ServerCertPort, be.config.KeyWord)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", serverPort))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", conf.ServerPort))
 
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	grpcServer, err := be.listenWithAutoCert(serverName, serverCertPort, usePerCallSecurity)
+	if conf.TLSCacheDir == "" {
+		conf.TLSCacheDir = "."
+	}
+
+	grpcServer, err := be.listenWithAutoCert(conf.TLSServerName, conf.ServerCertPort, conf.PerCallSecurity, conf.TLSCacheDir)
 	if err != nil {
 		log.Fatalf("failed to listenwithautocert: %v", err)
 	}
@@ -59,9 +73,9 @@ func (be *Server) servegRPCAutoCert(serverName string, serverPort int, serverCer
 	return grpcServer
 }
 
-func (be *Server) listenWithAutoCert(serverName string, certport int, usePerCallSecurity bool) (*grpc.Server, error) {
+func (be *Server) listenWithAutoCert(serverName string, certport int, usePerCallSecurity bool, cacheDir string) (*grpc.Server, error) {
 	m := &autocert.Manager{
-		Cache:      autocert.DirCache("//tlsdata"),
+		Cache:      autocert.DirCache(cacheDir),
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist(serverName),
 	}

@@ -44,9 +44,9 @@ func (s *Client) Connect() {
 	var err error
 
 	if s.config.UseTLS == false {
-		s.Connection, err = createclient(s.config.TLSServerName, s.config.ServerPort)
+		s.Connection, err = createclient(s.config)
 	} else {
-		s.Connection, err = createclientsecure(s.config.TLSServerName, s.config.ServerPort, s.config.KeyWord)
+		s.Connection, err = createclientsecure(s.config)
 	}
 
 	if err != nil {

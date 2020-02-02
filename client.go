@@ -9,23 +9,32 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-func createclient(servername string, port int) (*grpc.ClientConn, error) {
+func createclient(confg *ClientConf) (*grpc.ClientConn, error) {
 	fmt.Println("Client")
 
-	return grpc.Dial(fmt.Sprintf("%v:%v", servername, port), grpc.WithInsecure())
+	if confg.PerCallSecurity {
+		auth := authentication{Login: confg.KeyWord}
+		return grpc.Dial(fmt.Sprintf("%v:%v", confg.TLSServerName, confg.ServerPort), grpc.WithInsecure(), grpc.WithPerRPCCredentials(&auth))
+	}
+
+	return grpc.Dial(fmt.Sprintf("%v:%v", confg.TLSServerName, confg.ServerPort), grpc.WithInsecure())
 }
 
-func createclientsecure(servername string, port int, keyword string) (*grpc.ClientConn, error) {
-	fmt.Printf("Client Secure %v %v with keyword %v\n", servername, port, keyword)
+func createclientsecure(confg *ClientConf) (*grpc.ClientConn, error) {
+	fmt.Printf("Client Secure %v %v with keyword %v\n", confg.TLSServerName, confg.ServerPort, confg.KeyWord)
 
-	conf := &tls.Config{ServerName: servername}
+	conf := &tls.Config{ServerName: confg.TLSServerName}
 
 	creds := credentials.NewTLS(conf)
 
-	auth := authentication{Login: keyword}
+	auth := authentication{Login: confg.KeyWord}
 
-	return grpc.Dial(fmt.Sprintf("%v:%v", servername, port), grpc.WithTransportCredentials(creds),
-		grpc.WithPerRPCCredentials(&auth))
+	if confg.PerCallSecurity {
+		return grpc.Dial(fmt.Sprintf("%v:%v", confg.TLSServerName, confg.ServerPort), grpc.WithTransportCredentials(creds),
+			grpc.WithPerRPCCredentials(&auth))
+	}
+
+	return grpc.Dial(fmt.Sprintf("%v:%v", confg.TLSServerName, confg.ServerPort), grpc.WithTransportCredentials(creds))
 }
 
 type authentication struct {

@@ -2,67 +2,39 @@ package grpc_quick
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
-	"os"
-	"strconv"
 
 	grpc "google.golang.org/grpc"
-	yaml "gopkg.in/yaml.v2"
 )
-
-// Client
-
-type clientconf struct {
-	ServerPort    int    `yaml:"serverport"`
-	TLSServerName string `yaml:"tlsservername"`
-	IsSecure      bool   `yaml:"issecure"`
-	KeyWord       string `yaml:"keyword"`
-}
-
-func (c *clientconf) getClientConf() {
-	yamlFile, err := ioutil.ReadFile("clientconfig.yaml")
-	//TODO: create an empty one
-	if err != nil {
-		log.Fatalf("Please create a clientconfig.yaml file  #%v ", err)
-	}
-	err = yaml.Unmarshal(yamlFile, c)
-	if err != nil {
-		log.Fatalf("Invalid clientconfig.yaml: %v", err)
-	}
-}
-
-func (c *clientconf) getClientConfEnvironment() {
-	i, err := strconv.ParseInt(os.Getenv("SERVERPORT"), 10, 32)
-	if err == nil {
-		c.ServerPort = int(i)
-	}
-
-	c.TLSServerName = os.Getenv("TLSSERVERNAME")
-
-	b, err := strconv.ParseBool(os.Getenv("ISSECURE"))
-	if err == nil {
-		c.IsSecure = b
-	}
-
-	c.KeyWord = os.Getenv("KEYWORD")
-}
 
 // Client object
 type Client struct {
-	config     *clientconf
+	config     *ClientConf
 	Connection *grpc.ClientConn
 }
 
-// CreateClient is a factory for servers
-func CreateClient() *Client {
-	client := &Client{}
-	client.config = &clientconf{}
-	client.config.getClientConfEnvironment()
-	if client.config.ServerPort == 0 {
+// GetClientConfig attempts to retrieve configuration from the environment, then a YAML file
+func GetClientConfig() *ClientConf {
+	config := getClientConfEnvironment()
+	if config == nil {
 		fmt.Printf("Config not detected in environment, attempting YAML\n")
-		client.config.getClientConf()
+		config = getClientConf()
 	}
+	return config
+}
+
+// CreateEmptyClientConfig creates an empty config
+func CreateEmptyClientConfig() {
+	createEmptyClientConfig()
+}
+
+// CreateClient is a factory for servers
+func CreateClient(c *ClientConf) *Client {
+	if c == nil {
+		panic("Invalid config")
+	}
+	client := &Client{}
+	client.config = c
 
 	return client
 }
@@ -71,10 +43,10 @@ func CreateClient() *Client {
 func (s *Client) Connect() {
 	var err error
 
-	if s.config.IsSecure == false {
-		s.Connection, err = createclient(s.config.TLSServerName, s.config.ServerPort)
+	if s.config.UseTLS == false {
+		s.Connection, err = createclient(s.config)
 	} else {
-		s.Connection, err = createclientsecure(s.config.TLSServerName, s.config.ServerPort, s.config.KeyWord)
+		s.Connection, err = createclientsecure(s.config)
 	}
 
 	if err != nil {

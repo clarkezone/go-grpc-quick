@@ -1,16 +1,24 @@
 package grpc_quick
 
 import (
-	"os"
 	"testing"
 )
 
-func TestSerSuccess(t *testing.T) {
-	os.Setenv("SERVERPORT", "8443")
-	os.Setenv("SERVERCERTPORT", "8080")
-	config := &conf{}
-	config.getServerConfEnvironment()
-	if config.ServerPort != 8443 {
-		t.Fatalf("Port wasn't correct")
+func TestCreateServer(t *testing.T) {
+	c := &ServerConf{}
+	srv := CreateServer(c)
+
+	if srv == nil {
+		t.Fatalf("there should be no config because no YAML or environment")
 	}
+}
+
+func TestCreateServerFailNilConfig(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+
+	_ = CreateServer(nil)
 }
